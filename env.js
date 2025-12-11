@@ -8,6 +8,7 @@ export const env = createEnv({
       .default("development"),
 
     OPENROUTER_API_KEY: z.string().min(1),
+    GOOGLE_API_KEY: z.string().min(1),
   },
   client: {
     NEXT_PUBLIC_API_URL: z.string().min(1),
@@ -18,5 +19,6 @@ export const env = createEnv({
     OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY,
 
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+    GOOGLE_API_KEY: process.env.GOOGLE_API_KEY,
   },
 });

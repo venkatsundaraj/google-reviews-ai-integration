@@ -1,4 +1,5 @@
 import { ChatProvider } from "@/hooks/use-chat";
+import { EditorProvider } from "@/hooks/use-editor";
 import { FC } from "react";
 
 interface layoutProps {
@@ -6,7 +7,11 @@ interface layoutProps {
 }
 
 const layout: FC<layoutProps> = ({ children }) => {
-  return <ChatProvider>{children}</ChatProvider>;
+  return (
+    <ChatProvider>
+      <EditorProvider>{children}</EditorProvider>
+    </ChatProvider>
+  );
 };
 
 export default layout;

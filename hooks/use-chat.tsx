@@ -1,7 +1,13 @@
 "use client";
 
 import { MyUIMessage } from "@/types/chat";
-import { createContext, useContext, useEffect, useMemo } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+} from "react";
 import { UIMessage, useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 
@@ -27,12 +33,15 @@ export const ChatProvider = function ({
     },
     transport: new DefaultChatTransport({
       api: "/api/chat",
-      // prepareSendMessagesRequest({ messages, id }) {
-      //   return { body: { messages: messages[messages.length - 1] }, id };
-      // },
+      prepareSendMessagesRequest({ messages, id }) {
+        return { body: { messages: messages[messages.length - 1] }, id };
+      },
     }),
   });
-  const startNewMessage = function (id: string) {};
+  const startNewMessage = useCallback(async function (msg: string) {
+    if (!msg.trim()) return;
+    await chatProps.sendMessage({ text: msg });
+  }, []);
 
   useEffect(() => {}, []);
 
