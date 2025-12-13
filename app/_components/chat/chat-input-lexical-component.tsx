@@ -1,4 +1,6 @@
-import { FC, useEffect } from "react";
+"use client";
+
+import { FC, useCallback, useEffect } from "react";
 import { PlainTextPlugin } from "@lexical/react/LexicalPlainTextPlugin";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
@@ -15,6 +17,7 @@ import {
 } from "lexical";
 import { useParams } from "next/navigation";
 import { useChatContext } from "@/hooks/use-chat";
+import { Icons } from "../miscellaneous/icons";
 
 interface ChatInputLexicalComponentProps {}
 
@@ -72,11 +75,21 @@ const ChatInput = function ({
       removeCommand();
     };
   }, [editor, onSubmit]);
+
+  const handleSubmit = () => {
+    const text = editor.read(() => $getRoot().getTextContent().trim());
+    onSubmit(text);
+    return editor.update(() => {
+      const root = $getRoot();
+      root.clear();
+      root.append($createParagraphNode());
+    });
+  };
   return (
-    <>
+    <div className="w-full flex items-center justify-center relative ">
       <PlainTextPlugin
         contentEditable={
-          <ContentEditable className="w-[400px] h-[150px] overflow-y-scroll ring-2 border border-primary ring-accent rounded-md p-2 focus-within:outline-0" />
+          <ContentEditable className="w-full z-10 max-w-4xl h-[100px] overflow-y-scroll ring-2 border border-primary ring-accent rounded-2xl p-2 focus-within:outline-0" />
         }
         ErrorBoundary={LexicalErrorBoundary}
       />
@@ -84,16 +97,37 @@ const ChatInput = function ({
       {/* have been used use-editor hook here */}
       <PlaceholderPlugin placeholder="Write Something..." />
       <MultipleEditorPlugin id="app-sidebar" />
-    </>
+      <div className="w-full max-w-4xl h-[100px] absolute  flex items-end justify-end">
+        <button
+          onClick={handleSubmit}
+          className="-translate-x-1/3 z-11 -translate-y-1/3 w-10 h-10 rounded-full bg-primary flex items-center justify-center cursor-pointer hover:bg-primary/90"
+        >
+          <Icons.ChevronDown className="rotate-180 stroke-white" />
+        </button>
+      </div>
+    </div>
   );
 };
 
 const ChatInputLexicalComponent: FC<ChatInputLexicalComponentProps> = ({}) => {
-  const { startNewMessage } = useChatContext();
-  const submitHandler = function (text: string) {
-    startNewMessage(text);
-  };
-  return <ChatInput onSubmit={submitHandler} />;
+  const { startNewMessage, messages } = useChatContext();
+  const handleSubmit = useCallback(
+    async function (text: string) {
+      if (!text.trim()) return;
+
+      console.log(true, text);
+      // startNewMessage(text);
+    },
+    [messages]
+  );
+  return (
+    <div className="flex container items-center gap-16 flex-col justify-center w-full">
+      <h1 className="text-primary text-secondary-heading font-semibold leading-normal tracking-normal">
+        What do you want to explore?
+      </h1>
+      <ChatInput onSubmit={handleSubmit} />
+    </div>
+  );
 };
 
 export default ChatInputLexicalComponent;

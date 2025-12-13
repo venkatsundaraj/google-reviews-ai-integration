@@ -1,13 +1,13 @@
 import Image from "next/image";
 import InputBox from "@/app/_components/chat/input-box";
 import ChatInputLexical from "@/app/_components/chat/chat-input-lexical";
+import { api } from "@/trpc/server";
 
-export default function Home() {
+export default async function Home() {
+  const data = await api.hello.hello();
   return (
-    <main className="w-screen h-screen flex items-center justify-center ">
-      <section className="min-h-screen flex items-end justify-center">
-        <ChatInputLexical />
-      </section>
-    </main>
+    <section className="h-full w-full flex items-center justify-center">
+      <ChatInputLexical />
+    </section>
   );
 }

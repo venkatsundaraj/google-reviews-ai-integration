@@ -43,7 +43,11 @@ export const ChatProvider = function ({
     await chatProps.sendMessage({ text: msg });
   }, []);
 
-  useEffect(() => {}, []);
+  // useEffect(() => {
+  //   if (data?.messages && data.messages.length > 0) {
+  //     chatProps.setMessages(data?.messages);
+  //   }
+  // }, [data?.messages]);
 
   const value = useMemo(
     () => ({ startNewMessage, ...chatProps }),

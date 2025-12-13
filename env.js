@@ -9,6 +9,13 @@ export const env = createEnv({
 
     OPENROUTER_API_KEY: z.string().min(1),
     GOOGLE_API_KEY: z.string().min(1),
+    BETTER_AUTH_SECRET: z.string().min(1),
+    BETTER_AUTH_URL: z.string().min(1),
+    GOOGLE_CLIENT_ID: z.string().min(1),
+    GOOGLE_CLIENT_SECRET: z.string().min(1),
+    VERCEL_URL: z.string().min(1),
+    DATABASE_URL: z.string().min(1),
+    NEXT_PUBLIC_BETTER_AUTH_URL: z.string().min(1),
   },
   client: {
     NEXT_PUBLIC_API_URL: z.string().min(1),
@@ -20,5 +27,12 @@ export const env = createEnv({
 
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
     GOOGLE_API_KEY: process.env.GOOGLE_API_KEY,
+    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+    BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
+    NEXT_PUBLIC_BETTER_AUTH_URL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL,
+    BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
+    VERCEL_URL: process.env.VERCEL_URL,
+    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+    DATABASE_URL: process.env.DATABASE_URL,
   },
 });
