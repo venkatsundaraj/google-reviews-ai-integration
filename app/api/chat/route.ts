@@ -26,115 +26,118 @@ const messageInput = z.object({
   id: z.string(),
   message: z.any(),
 });
-export async function POST(req: NextRequest, res: NextResponse) {
-  const body = await req.json();
-  const session = await getCurrentUser();
-  if (!session?.user.email) {
-    throw new Error("unauthorized");
-  }
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const session = await getCurrentUser();
+    if (!session?.user.email) {
+      throw new Error("unauthorized");
+    }
 
-  const { data } = messageInput.safeParse(body);
+    const { data } = messageInput.safeParse(body);
 
-  if (!data) {
-    throw new Error("Something went wrong here");
-  }
+    if (!data) {
+      throw new Error("Something went wrong here");
+    }
 
-  const { id, message } = data as { id: string; message: MyUIMessage };
+    const { id, message } = data as { id: string; message: MyUIMessage };
 
-  const limiter =
-    session.user.plan === "pro"
-      ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "4h") })
-      : new Ratelimit({ redis, limiter: Ratelimit.fixedWindow(3, "6h") });
+    const limiter =
+      session.user.plan === "pro"
+        ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "4h") })
+        : new Ratelimit({ redis, limiter: Ratelimit.fixedWindow(3, "6h") });
 
-  const [history, limitResult] = await Promise.all([
-    redis.get<MyUIMessage[]>(`chat:history:${id}`),
-    limiter.limit(session.user.email),
-  ]);
+    const [history, limitResult] = await Promise.all([
+      redis.get<MyUIMessage[]>(`chat:history:${id}`),
+      limiter.limit(session.user.email),
+    ]);
 
-  if (env.NODE_ENV === "production") {
-    const { success } = limitResult;
+    if (env.NODE_ENV === "production") {
+      const { success } = limitResult;
 
-    if (!success) {
-      if (session.user.plan === "pro") {
-        throw new Error(
-          "You've reached your hourly message limit. Please try again in a few hours."
-        );
-      } else {
-        throw new Error("Free plan limit reached, please upgrade to continue.");
+      if (!success) {
+        if (session.user.plan === "pro") {
+          throw new Error(
+            "You've reached your hourly message limit. Please try again in a few hours."
+          );
+        } else {
+          throw new Error(
+            "Free plan limit reached, please upgrade to continue."
+          );
+        }
       }
     }
-  }
 
-  const rawUserMessage = message.parts.reduce(
-    (acc, cur) => (cur.type === "text" ? acc + cur.text : ""),
-    ""
-  );
+    const rawUserMessage = message.parts.reduce(
+      (acc, cur) => (cur.type === "text" ? acc + cur.text : ""),
+      ""
+    );
 
-  const content = new XmlPrompt();
-  content.open("message", { date: format(new Date(), "EEEE yyyy-MM-dd") });
-  content.tag("user_message", rawUserMessage);
-  content.close("message");
+    const content = new XmlPrompt();
+    content.open("message", { date: format(new Date(), "EEEE yyyy-MM-dd") });
+    content.tag("user_message", rawUserMessage);
+    content.close("message");
 
-  const userMessage: MyUIMessage = {
-    ...message,
-    parts: [{ type: "text", text: rawUserMessage }],
-  };
+    const userMessage: MyUIMessage = {
+      ...message,
+      parts: [{ type: "text", text: rawUserMessage }],
+    };
 
-  const messages = [...(history ?? []), userMessage] as MyUIMessage[];
+    const messages = [...(history ?? []), userMessage] as MyUIMessage[];
 
-  const stream = createUIMessageStream<MyUIMessage>({
-    originalMessages: messages,
-    onFinish: async ({ messages }) => {
-      await redis.set(`chat:history:${id}`, messages);
+    const stream = createUIMessageStream<MyUIMessage>({
+      originalMessages: messages,
+      onFinish: async ({ messages }) => {
+        await redis.set(`chat:history:${id}`, messages);
 
-      const historyKey = `chat:history-list:${session.user.email}`;
-      const existingHistory =
-        (await redis.get<ChatHistoryItem[]>(historyKey)) || [];
+        const historyKey = `chat:history-list:${session.user.email}`;
+        const existingHistory =
+          (await redis.get<ChatHistoryItem[]>(historyKey)) || [];
 
-      const firstUserMessage = messages.find((m) => m.role === "user");
-      const userContent =
-        firstUserMessage?.parts
-          .filter((p) => p.type === "text")
-          .map((p) => p.text)
-          .join(" ") || "unnamed chat";
+        const firstUserMessage = messages.find((m) => m.role === "user");
+        const userContent =
+          firstUserMessage?.parts
+            .filter((p) => p.type === "text")
+            .map((p) => p.text)
+            .join(" ") || "unnamed chat";
 
-      const tempTitle =
-        userContent.length > 60
-          ? userContent.slice(0, 60) + "..."
-          : userContent;
+        const tempTitle =
+          userContent.length > 60
+            ? userContent.slice(0, 60) + "..."
+            : userContent;
 
-      const existing = existingHistory.find((item) => item.id === id);
-      const title = existing?.title || tempTitle;
+        const existing = existingHistory.find((item) => item.id === id);
+        const title = existing?.title || tempTitle;
 
-      const chatHistoryItem: ChatHistoryItem = {
-        id,
-        title: title,
-        lastUpdated: new Date().toISOString(),
-      };
+        const chatHistoryItem: ChatHistoryItem = {
+          id,
+          title: title,
+          lastUpdated: new Date().toISOString(),
+        };
 
-      await redis.set(historyKey, [
-        chatHistoryItem,
-        ...existingHistory.filter((item) => item.id !== id),
-      ]);
-    },
-    onError: (err) => {
-      console.log(err);
-      return err instanceof Error ? err.message : "Something went wrong";
-    },
-    execute: async ({ writer }) => {
-      const createWeatherTool = create_weather_tool({
-        writer,
-        ctx: { messages, rawUserMessage },
-      });
+        await redis.set(historyKey, [
+          chatHistoryItem,
+          ...existingHistory.filter((item) => item.id !== id),
+        ]);
+      },
+      onError: (err) => {
+        console.log(err);
+        return err instanceof Error ? err.message : "Something went wrong";
+      },
+      execute: async ({ writer }) => {
+        const createWeatherTool = create_weather_tool({
+          writer,
+          ctx: { messages, rawUserMessage },
+        });
 
-      const getCode = get_code();
-      const googleMapInsights = google_map_insights();
-      const result = streamText({
-        model: openrouter.chat("amazon/nova-2-lite-v1:free", {
-          models: ["amazon/nova-2-lite-v1:free"],
-          reasoning: { effort: "low" },
-        }),
-        system: `You are a helpful assistant that provides restaurant and place recommendations based on Google Maps reviews.
+        const getCode = get_code();
+        const googleMapInsights = google_map_insights();
+        const result = streamText({
+          model: openrouter.chat("amazon/nova-2-lite-v1:free", {
+            models: ["amazon/nova-2-lite-v1:free"],
+            reasoning: { effort: "low" },
+          }),
+          system: `You are a helpful assistant that provides restaurant and place recommendations based on Google Maps reviews.
 
                   When users ask about places:
                   - Use the googleMapInsights tool to fetch real review data
@@ -144,20 +147,26 @@ export async function POST(req: NextRequest, res: NextResponse) {
                   - Always cite that your information comes from Google Maps reviews
 
                   Important: Only recommend places you've actually fetched data for. Don't make up information.`,
-        tools: {
-          // createWeatherTool,
-          // getCode,
-          googleMapInsights,
-        },
+          tools: {
+            // createWeatherTool,
+            // getCode,
+            googleMapInsights,
+          },
 
-        messages: convertToModelMessages(messages),
-        stopWhen: stepCountIs(5),
-      });
+          messages: convertToModelMessages(messages),
+          stopWhen: stepCountIs(5),
+        });
 
-      writer.merge(result.toUIMessageStream());
-    },
-  });
+        writer.merge(result.toUIMessageStream());
+      },
+    });
 
-  return createUIMessageStreamResponse({ stream });
-  return true;
+    return createUIMessageStreamResponse({ stream });
+  } catch (err) {
+    console.log(err);
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Something went wrong" },
+      { status: 500 }
+    );
+  }
 }
