@@ -84,6 +84,7 @@ export const ChatProvider = function ({
 
       if (params.id) {
         await chatProps.sendMessage({ text: msg });
+        utils.chat.getListofChats.invalidate();
       }
       if (!params.id) {
         const defaultValue = nanoid();
@@ -107,7 +108,7 @@ export const ChatProvider = function ({
     if (pendingMessage) {
       setHasPending(false);
       chatProps.sendMessage({ text: pendingMessage }).then(() => {
-        utils.chat.getChatHistories.invalidate();
+        utils.chat.getListofChats.invalidate();
       });
       pendingMessages.delete(params.id);
     }

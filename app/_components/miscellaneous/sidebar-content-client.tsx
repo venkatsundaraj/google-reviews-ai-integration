@@ -82,7 +82,7 @@ const SidebarContentClient: FC<SidebarContentClientProps> = ({}) => {
                 <SidebarMenuButton asChild className="">
                   <Link
                     href={`/chat/${item.id}`}
-                    className="text-extra-paragraph-headin cursor-pointer menu-item-group font-paragraph text-foreground leading-normal tracking-wide"
+                    className="text-extra-paragraph-heading cursor-pointer menu-item-group font-heading text-foreground leading-normal tracking-wide"
                   >
                     <span className="max-w-[85%] w-full block truncate">
                       {item.title}

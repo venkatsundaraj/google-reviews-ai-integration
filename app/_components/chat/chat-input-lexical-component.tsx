@@ -88,14 +88,14 @@ const ChatInput = function ({
   };
   return (
     <div className="w-full flex items-center justify-center relative mt-2">
-      <div className="w-full max-w-4xl relative">
+      <div className="w-full max-w-4xl z-10 relative">
         <PlainTextPlugin
           contentEditable={
             <ContentEditable className="w-full  z-10 max-w-4xl h-[100px] overflow-y-scroll ring-2 border border-primary ring-accent rounded-2xl p-2 focus-within:outline-0" />
           }
           ErrorBoundary={LexicalErrorBoundary}
           placeholder={
-            <div className="pointer-events-none absolute top-3 left-3 text-muted-foreground">
+            <div className="pointer-events-none absolute top-3 left-3 text-muted-foreground z-0 ">
               Write something…
             </div>
           }

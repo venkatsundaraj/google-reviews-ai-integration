@@ -41,7 +41,7 @@ export const auth = betterAuth({
       ? [
           oAuthProxy({
             productionURL:
-              "https://arivara-ai-frontend.vercel.app/api/auth/callback/google", // Replace with your domain
+              "https://locallensai.vercel.app/api/auth/callback/google", // Replace with your domain
             currentURL: env.BETTER_AUTH_URL,
           }),
           customSession(async ({ user, session }) => {

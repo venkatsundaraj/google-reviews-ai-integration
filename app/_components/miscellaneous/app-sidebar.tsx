@@ -16,19 +16,19 @@ interface AppSidebarProps {}
 
 export const AppSidebar = async function ({}: AppSidebarProps) {
   return (
-    <Sidebar className="h-screen py-">
+    <Sidebar className="h-screen bg-transparent">
       <SidebarHeader className="bg-background gap-2">
         <Link
           href={"/"}
-          className="text-foreground font-bold text-paragraph-heading  text-center leading-tight tracking-normal font-heading  max-w-2xl mb-4"
+          className="text-foreground font-logo font-extrabold uppercase text-paragraph-heading pt-4  text-center leading-tight tracking-normal  max-w-2xl mb-4"
         >
-          Google Maps AI
+          Locallens
         </Link>
         <Link
           href={`/`}
           className={cn(
             buttonVariants({ variant: "default" }),
-            "hover:bg-primary/90 text-white hover:text-white"
+            "hover:bg-primary/90 text-white hover:text-white font-heading"
           )}
         >
           New Chat

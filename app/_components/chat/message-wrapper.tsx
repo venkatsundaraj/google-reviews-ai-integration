@@ -36,7 +36,7 @@ export const MessageWrapper = memo(
         initial={disableAnimation ? false : { opacity: 0, y: 10 }}
         animate={disableAnimation ? false : { opacity: 1, y: 0 }}
         className={cn(
-          "w-full flex flex-col gap-2",
+          "w-full flex flex-col gap-2 font-heading",
           isUser
             ? "justify-self-end items-end"
             : "justify-self-start items-start"
@@ -60,7 +60,7 @@ export const MessageWrapper = memo(
                 "space-y-5 rounded-2xl px-3",
                 isUser
                   ? "bg-white/90 p-3.5  w-fit justify-self-end text-primary border-primary border rounded-br-sm max-w-[80%]"
-                  : "text-white bg-primary pt-3.5 rounded-bl-sm  max-w-[75%]"
+                  : "text-white bg-primary/90 pt-3.5 rounded-bl-sm  max-w-[75%]"
               )}
             >
               {children}
