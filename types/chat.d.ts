@@ -3,14 +3,14 @@ import { UIMessage } from "ai";
 import z from "zod";
 
 export const dataPart = z.object({
-  mainResponse: z.object({
+  "tool-reasoning": z.object({
     text: z.string(),
-    status: z.enum(["streaming", "complete"]),
+    status: z.enum(["streaming", "complete", "reasoning"]),
   }),
 });
 
 export type dataPartSchema = z.infer<typeof dataPart>;
-type Metadata = {
+export type Metadata = {
   userMessage: string;
   isGenerated: boolean;
   attachments: Array<AttachmentSchema>;

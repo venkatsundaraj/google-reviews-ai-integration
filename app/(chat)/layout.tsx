@@ -5,6 +5,7 @@ import { AppSidebar } from "@/app/_components/miscellaneous/app-sidebar";
 import { SidebarProvider, SidebarTrigger } from "../_components/ui/sidebar";
 import SettingsIcon from "@/app/_components/chat/settings-icon";
 import { ModeToggle } from "../_components/miscellaneous/toggle-theme";
+import { Toaster } from "../_components/ui/sonner";
 
 interface layoutProps {
   children: React.ReactNode;
@@ -16,7 +17,7 @@ const layout: FC<layoutProps> = ({ children }) => {
       <EditorProvider>
         <SidebarProvider>
           <AppSidebar />
-          <main className="w-full bg-background flex flex-col items-center justify-start relative">
+          <main className="w-full bg-background h-screen overflow-y-hidden flex flex-col items-center justify-start relative">
             <nav className="w-full z-10 h-[6%] bg-transparent">
               <div className="flex items-center justify-between py-4 px-8">
                 <SidebarTrigger />
@@ -28,6 +29,7 @@ const layout: FC<layoutProps> = ({ children }) => {
             </nav>
             {children}
           </main>
+          <Toaster />
         </SidebarProvider>
       </EditorProvider>
     </ChatProvider>

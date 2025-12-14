@@ -18,6 +18,7 @@ import {
 import { useParams } from "next/navigation";
 import { useChatContext } from "@/hooks/use-chat";
 import { Icons } from "../miscellaneous/icons";
+import MessageSection from "./message-section";
 
 interface ChatInputLexicalComponentProps {}
 
@@ -86,17 +87,24 @@ const ChatInput = function ({
     });
   };
   return (
-    <div className="w-full flex items-center justify-center relative ">
-      <PlainTextPlugin
-        contentEditable={
-          <ContentEditable className="w-full z-10 max-w-4xl h-[100px] overflow-y-scroll ring-2 border border-primary ring-accent rounded-2xl p-2 focus-within:outline-0" />
-        }
-        ErrorBoundary={LexicalErrorBoundary}
-      />
-      <HistoryPlugin />
-      {/* have been used use-editor hook here */}
-      <PlaceholderPlugin placeholder="Write Something..." />
-      <MultipleEditorPlugin id="app-sidebar" />
+    <div className="w-full flex items-center justify-center relative mt-2">
+      <div className="w-full max-w-4xl relative">
+        <PlainTextPlugin
+          contentEditable={
+            <ContentEditable className="w-full  z-10 max-w-4xl h-[100px] overflow-y-scroll ring-2 border border-primary ring-accent rounded-2xl p-2 focus-within:outline-0" />
+          }
+          ErrorBoundary={LexicalErrorBoundary}
+          placeholder={
+            <div className="pointer-events-none absolute top-3 left-3 text-muted-foreground">
+              Write something…
+            </div>
+          }
+        />
+        <HistoryPlugin />
+        {/* have been used use-editor hook here */}
+        <PlaceholderPlugin placeholder="Write Something..." />
+        <MultipleEditorPlugin id="app-sidebar" />
+      </div>
       <div className="w-full max-w-4xl h-[100px] absolute  flex items-end justify-end">
         <button
           onClick={handleSubmit}
@@ -110,21 +118,25 @@ const ChatInput = function ({
 };
 
 const ChatInputLexicalComponent: FC<ChatInputLexicalComponentProps> = ({}) => {
-  const { startNewMessage, messages } = useChatContext();
+  const { startNewMessage, messages, status } = useChatContext();
+  const params = useParams<{ id: string }>();
   const handleSubmit = useCallback(
     async function (text: string) {
       if (!text.trim()) return;
-
-      console.log(true, text);
-      // startNewMessage(text);
+      startNewMessage(text);
     },
     [messages]
   );
   return (
-    <div className="flex container items-center gap-16 flex-col justify-center w-full">
-      <h1 className="text-primary text-secondary-heading font-semibold leading-normal tracking-normal">
-        What do you want to explore?
-      </h1>
+    <div className="w-full h-full flex flex-col items-center justify-end py-4">
+      {messages.length && params.id ? (
+        <MessageSection messages={messages} status={status} />
+      ) : (
+        <h1 className="flex-1 flex items-center justify-center font-heading text-primary-heading text-primary  font-bold leading-normal">
+          What's on your mind?
+        </h1>
+      )}
+      {/* {!messages.length && !params.id ? <h1>hello world</h1> : null} */}
       <ChatInput onSubmit={handleSubmit} />
     </div>
   );

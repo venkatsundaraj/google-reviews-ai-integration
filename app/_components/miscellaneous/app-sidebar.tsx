@@ -10,6 +10,7 @@ import {
 } from "@/app/_components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import SidebarContentClient from "./sidebar-content-client";
 
 interface AppSidebarProps {}
 
@@ -33,6 +34,7 @@ export const AppSidebar = async function ({}: AppSidebarProps) {
           New Chat
         </Link>
       </SidebarHeader>
+      <SidebarContentClient />
       <SidebarFooter>
         <SigninButton />
       </SidebarFooter>

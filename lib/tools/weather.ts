@@ -6,7 +6,7 @@ import z from "zod";
 export type Context = {
   writer: UIMessageStreamWriter;
   ctx: {
-    totalMessages: MyUIMessage[];
+    messages: MyUIMessage[];
     rawUserMessage: string;
   };
 };

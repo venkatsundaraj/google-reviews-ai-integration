@@ -27,7 +27,6 @@ export const google_map_insights = function () {
     }),
     execute: async ({ location, placeName, type = "restaurant" }) => {
       try {
-        console.log(location, placeName, type);
         if (placeName) {
           console.log(placeName);
           const searchUrl = new URL(
@@ -90,7 +89,7 @@ export const google_map_insights = function () {
         const textSearchResponse = await fetch(textSearchUrl.toString());
         console.log(textSearchResponse);
         const textSearchData = await textSearchResponse.json();
-        console.log(textSearchData);
+
         if (!textSearchData.results?.length) {
           return { error: "No places found in this area" };
         }

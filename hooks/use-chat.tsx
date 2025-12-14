@@ -7,24 +7,49 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useState,
 } from "react";
 import { UIMessage, useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
+import { useParams, useRouter } from "next/navigation";
+import { nanoid } from "nanoid";
+import { toast } from "sonner";
+import { authClient, useSession } from "@/lib/auth-client";
+import { User } from "@/server/db/schema";
+import { api } from "@/trpc/react";
 
 interface ChatContextProps extends ReturnType<typeof useChat<MyUIMessage>> {
-  startNewMessage: (text: string) => void;
+  startNewMessage: (text: string) => Promise<void>;
 }
 
 const ChatContext = createContext<ChatContextProps | null>(null);
+const pendingMessages = new Map<string, string>();
 
 export const ChatProvider = function ({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const [chatValue, setChatValue] = useState<string>();
+  const [hasPending, setHasPending] = useState<boolean>(true);
+  const params = useParams<{ id: string }>();
+  const router = useRouter();
+  const utils = api.useUtils();
+  const session = useSession();
+
+  const { data } = api.chat.getChatHistories.useQuery(
+    { id: params.id as string },
+    {
+      enabled: Boolean(params.id && session),
+      refetchOnMount: true,
+      staleTime: 0,
+      refetchOnWindowFocus: false,
+    }
+  );
+
   const chatProps = useChat<MyUIMessage>({
     messages: [],
-    id: "fdfd",
+    id: params.id ?? undefined,
     onError: (err) => {
       console.log(err);
     },
@@ -33,21 +58,66 @@ export const ChatProvider = function ({
     },
     transport: new DefaultChatTransport({
       api: "/api/chat",
+
       prepareSendMessagesRequest({ messages, id }) {
-        return { body: { messages: messages[messages.length - 1] }, id };
+        console.log(id, "iddd");
+        return { body: { message: messages[messages.length - 1], id } };
       },
     }),
   });
-  const startNewMessage = useCallback(async function (msg: string) {
-    if (!msg.trim()) return;
-    await chatProps.sendMessage({ text: msg });
-  }, []);
+  const startNewMessage = useCallback(
+    async function (msg: string) {
+      if (!msg) {
+        toast.error("You have to enter the message", {
+          position: "top-center",
+        });
+        return;
+      }
 
-  // useEffect(() => {
-  //   if (data?.messages && data.messages.length > 0) {
-  //     chatProps.setMessages(data?.messages);
-  //   }
-  // }, [data?.messages]);
+      const sessionRes = await authClient.getSession();
+      const currentUser = sessionRes.data?.user as User;
+
+      if (!currentUser?.email) {
+        toast.error("Please authenticate", { position: "top-center" });
+        return;
+      }
+
+      if (params.id) {
+        await chatProps.sendMessage({ text: msg });
+      }
+      if (!params.id) {
+        const defaultValue = nanoid();
+
+        toast.success("New chat has been created", {
+          position: "top-center",
+        });
+
+        pendingMessages.set(defaultValue, msg);
+
+        router.push(`/chat/${defaultValue}`);
+      }
+      return Promise.resolve();
+    },
+    [params.id, router, chatProps, utils.chat.getListofChats]
+  );
+
+  useEffect(() => {
+    if (!params.id || !hasPending) return;
+    const pendingMessage = pendingMessages.get(params.id);
+    if (pendingMessage) {
+      setHasPending(false);
+      chatProps.sendMessage({ text: pendingMessage }).then(() => {
+        utils.chat.getChatHistories.invalidate();
+      });
+      pendingMessages.delete(params.id);
+    }
+  }, [params.id, router, chatProps, utils.chat.getListofChats]);
+
+  useEffect(() => {
+    if (data?.messages && data.messages.length > 0) {
+      chatProps.setMessages(data?.messages);
+    }
+  }, [data?.messages]);
 
   const value = useMemo(
     () => ({ startNewMessage, ...chatProps }),

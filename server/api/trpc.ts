@@ -6,6 +6,7 @@
  * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
+import { getCurrentUser } from "@/lib/session";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
@@ -134,6 +135,39 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
  * guarantee that a user querying is authorized, but you can still access user session data if they
  * are logged in.
  */
+
+const isAuthWithoutUser = t.middleware(async (opts) => {
+  const user = await getCurrentUser();
+
+  // if (!user) {
+  //   return opts.next({
+  //     ctx: {},
+  //   });
+  // }
+
+  return opts.next({
+    ctx: {
+      ...user,
+    },
+  });
+});
+
+const isAuth = t.middleware(async (opts) => {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    throw new Error("Something went wrong");
+  }
+
+  return opts.next({
+    ctx: {
+      ...user,
+    },
+  });
+});
+
 export const publicProcedure = t.procedure.use(timingMiddleware);
+export const publicProcedureWithUser = t.procedure.use(isAuthWithoutUser);
+export const privateProcedure = t.procedure.use(isAuth);
 // export const privateProcedure = t.procedure.use(isAuth);
 // export const publicProcedureWithUser = t.procedure.use(isAuthWithoutUser);
