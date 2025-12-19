@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     const limiter =
       session.user.plan === "pro"
         ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "4h") })
-        : new Ratelimit({ redis, limiter: Ratelimit.fixedWindow(3, "6h") });
+        : new Ratelimit({ redis, limiter: Ratelimit.fixedWindow(5, "6h") });
 
     const [history, limitResult] = await Promise.all([
       redis.get<MyUIMessage[]>(`chat:history:${id}`),
@@ -133,8 +133,8 @@ export async function POST(req: NextRequest) {
         const getCode = get_code();
         const googleMapInsights = google_map_insights();
         const result = streamText({
-          model: openrouter.chat("amazon/nova-2-lite-v1:free", {
-            models: ["amazon/nova-2-lite-v1:free"],
+          model: openrouter.chat("z-ai/glm-4.5-air:free", {
+            models: ["z-ai/glm-4.5-air:free"],
             reasoning: { effort: "low" },
           }),
           system: `You are a helpful assistant that provides restaurant and place recommendations based on Google Maps reviews.
@@ -170,3 +170,6 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+// nex-agi/deepseek-v3.1-nex-n1:free
+// nex-agi/deepseek-v3.1-nex-n1:free

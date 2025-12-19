@@ -28,7 +28,6 @@ export const google_map_insights = function () {
     execute: async ({ location, placeName, type = "restaurant" }) => {
       try {
         if (placeName) {
-          console.log(placeName);
           const searchUrl = new URL(
             "https://maps.googleapis.com/maps/api/place/findplacefromtext/json"
           );
@@ -58,11 +57,11 @@ export const google_map_insights = function () {
           detailsUrl.searchParams.append("key", env.GOOGLE_API_KEY);
 
           const detailsResponse = await fetch(detailsUrl.toString());
-          console.log("res", detailsResponse);
+
           const detailsData = await detailsResponse.json();
-          console.log(detailsData);
+
           const place = detailsData.result;
-          console.log(place);
+
           return {
             placeName: place.name,
             placeId: placeId,
@@ -85,9 +84,9 @@ export const google_map_insights = function () {
 
         textSearchUrl.searchParams.append("query", `${type} in ${location}`);
         textSearchUrl.searchParams.append("key", env.GOOGLE_API_KEY);
-        console.log("texturl", textSearchUrl);
+
         const textSearchResponse = await fetch(textSearchUrl.toString());
-        console.log(textSearchResponse);
+
         const textSearchData = await textSearchResponse.json();
 
         if (!textSearchData.results?.length) {
