@@ -2,6 +2,7 @@ import Image from "next/image";
 import InputBox from "@/app/_components/chat/input-box";
 import ChatInputLexical from "@/app/_components/chat/chat-input-lexical";
 import { api } from "@/trpc/server";
+import { AttachmentProvider } from "@/hooks/use-attachments";
 
 export default async function Home() {
   const data = await api.hello.hello();

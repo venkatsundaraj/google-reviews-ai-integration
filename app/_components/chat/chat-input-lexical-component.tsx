@@ -1,6 +1,6 @@
 "use client";
 
-import { FC, useCallback, useEffect } from "react";
+import { FC, useCallback, useContext, useEffect } from "react";
 import { PlainTextPlugin } from "@lexical/react/LexicalPlainTextPlugin";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
@@ -19,6 +19,13 @@ import { useParams } from "next/navigation";
 import { useChatContext } from "@/hooks/use-chat";
 import { Icons } from "../miscellaneous/icons";
 import MessageSection from "./message-section";
+import {
+  FileUpload,
+  FileUploadContext,
+  FileUploadTrigger,
+} from "@/hooks/use-file-upload";
+import { cn } from "@/lib/utils";
+import { useAttachment } from "@/hooks/use-attachments";
 
 interface ChatInputLexicalComponentProps {}
 
@@ -29,6 +36,8 @@ const ChatInput = function ({
 }) {
   const [editor] = useLexicalComposerContext();
   const params = useParams<{ id: string }>();
+  const context = useContext(FileUploadContext);
+
   useEffect(() => {
     const unregisterListener = editor.registerUpdateListener(
       ({ editorState }) => {
@@ -86,12 +95,26 @@ const ChatInput = function ({
       root.append($createParagraphNode());
     });
   };
+
   return (
-    <div className="w-full flex items-center justify-center relative mt-2">
-      <div className="w-full max-w-4xl z-10 relative">
+    <div
+      className={cn(
+        "w-full max-w-4xl  flex items-center justify-center relative mt-2",
+        context?.isDragging &&
+          "bg-primary/10 rounded-2xl border border-dotted border-primary"
+      )}
+    >
+      {context?.isDragging && (
+        <div className="absolute rounded-2xl top-1/2 z-10 left-1/2 -translate-y-1/2 -translate-x-1/2">
+          <span className="text-primary font-heading font-normal text-subtitle-heading leading-normal tracking-normal">
+            Please drag and drop here
+          </span>
+        </div>
+      )}
+      <div className="w-4xl z-10 relative ">
         <PlainTextPlugin
           contentEditable={
-            <ContentEditable className="w-full  z-10 max-w-4xl h-[100px] overflow-y-scroll ring-2 border border-primary ring-accent rounded-2xl p-2 focus-within:outline-0" />
+            <ContentEditable className=" 4xl h-[100px] overflow-y-scroll ring-2 border border-primary ring-accent rounded-2xl p-2 focus-within:outline-0" />
           }
           ErrorBoundary={LexicalErrorBoundary}
           placeholder={
@@ -105,7 +128,14 @@ const ChatInput = function ({
         <PlaceholderPlugin placeholder="Write Something..." />
         <MultipleEditorPlugin id="app-sidebar" />
       </div>
-      <div className="w-full max-w-4xl h-[100px] absolute  flex items-end justify-end">
+      <div className="z-10   absolute bottom-0 left-0  flex items-end justify-start">
+        {/* <FileUpload multiple={true} onFilesAdded={handleFileAdded}> */}
+        <FileUploadTrigger className="flex items-center justify-center group translate-x-1 -translate-y-1 cursor-pointer w-8 h-8 ">
+          <Icons.Paperclip className="w-4 h-4 group-hover:stroke-primary" />
+        </FileUploadTrigger>
+        {/* </FileUpload> */}
+      </div>
+      <div className="w-4xl h-[100px] absolute  flex items-end justify-end">
         <button
           onClick={handleSubmit}
           className="-translate-x-1/3 z-11 -translate-y-1/3 w-10 h-10 rounded-full bg-primary flex items-center justify-center cursor-pointer hover:bg-primary/90"
@@ -118,6 +148,7 @@ const ChatInput = function ({
 };
 
 const ChatInputLexicalComponent: FC<ChatInputLexicalComponentProps> = ({}) => {
+  const { addAttachment } = useAttachment();
   const { startNewMessage, messages, status } = useChatContext();
   const params = useParams<{ id: string }>();
   const handleSubmit = useCallback(
@@ -127,6 +158,10 @@ const ChatInputLexicalComponent: FC<ChatInputLexicalComponentProps> = ({}) => {
     },
     [messages]
   );
+
+  const handleFileAdded = useCallback((file: File[]) => {
+    addAttachment(file);
+  }, []);
   return (
     <div className="w-full h-full flex flex-col items-center justify-end py-4">
       {messages.length && params.id ? (
@@ -137,7 +172,9 @@ const ChatInputLexicalComponent: FC<ChatInputLexicalComponentProps> = ({}) => {
         </h1>
       )}
       {/* {!messages.length && !params.id ? <h1>hello world</h1> : null} */}
-      <ChatInput onSubmit={handleSubmit} />
+      <FileUpload multiple={true} onFilesAdded={handleFileAdded}>
+        <ChatInput onSubmit={handleSubmit} />
+      </FileUpload>
     </div>
   );
 };
