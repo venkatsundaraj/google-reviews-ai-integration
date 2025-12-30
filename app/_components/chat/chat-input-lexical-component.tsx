@@ -130,7 +130,7 @@ const ChatInput = function ({
       </div>
       <div className="z-10   absolute bottom-0 left-0  flex items-end justify-start">
         {/* <FileUpload multiple={true} onFilesAdded={handleFileAdded}> */}
-        <FileUploadTrigger className="flex items-center justify-center group translate-x-1 -translate-y-1 cursor-pointer w-8 h-8 ">
+        <FileUploadTrigger className="hidden items-center justify-center group translate-x-1 -translate-y-1 cursor-pointer w-8 h-8 ">
           <Icons.Paperclip className="w-4 h-4 group-hover:stroke-primary" />
         </FileUploadTrigger>
         {/* </FileUpload> */}
