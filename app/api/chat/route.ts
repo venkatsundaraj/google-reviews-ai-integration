@@ -133,8 +133,8 @@ export async function POST(req: NextRequest) {
         const getCode = get_code();
         const googleMapInsights = google_map_insights();
         const result = streamText({
-          model: openrouter.chat("z-ai/glm-4.5-air:free", {
-            models: ["z-ai/glm-4.5-air:free"],
+          model: openrouter.chat("nex-agi/deepseek-v3.1-nex-n1:free", {
+            models: ["nex-agi/deepseek-v3.1-nex-n1:free"],
             reasoning: { effort: "low" },
           }),
           system: `You are a helpful assistant that provides restaurant and place recommendations based on Google Maps reviews.
