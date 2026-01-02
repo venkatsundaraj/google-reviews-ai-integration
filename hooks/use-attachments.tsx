@@ -1,4 +1,5 @@
 "use client";
+import { fileToBase64 } from "@/lib/utils";
 import { api } from "@/trpc/react";
 import { createContext, useCallback, useContext, useMemo } from "react";
 
@@ -13,9 +14,16 @@ export const AttachmentProvider = function ({
   children: React.ReactNode;
 }) {
   const { mutateAsync: uploadFiles } = api.file.upload.useMutation({});
-  const addAttachment = useCallback((file: File[]) => {
-    console.log(file);
-    // uploadFiles({ file });
+  const addAttachment = useCallback(async (file: File[]) => {
+    const filesWithData = await Promise.all(
+      file.map(async (item) => ({
+        name: item.name,
+        type: item.type,
+        data: await fileToBase64(item),
+        size: item.size,
+      }))
+    );
+    uploadFiles({ files: filesWithData });
   }, []);
   const value = useMemo(() => ({ addAttachment }), []);
   return (
