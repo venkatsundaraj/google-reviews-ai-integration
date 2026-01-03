@@ -26,6 +26,7 @@ const messageInput = z.object({
   id: z.string(),
   message: z.any(),
 });
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();

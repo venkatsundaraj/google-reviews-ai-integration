@@ -1,8 +1,25 @@
 "use client";
 import { fileToBase64 } from "@/lib/utils";
 import { api } from "@/trpc/react";
-import { createContext, useCallback, useContext, useMemo } from "react";
+import { AttachmentSchema } from "@/lib/validation/chat";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from "react";
+import { useUploadThing } from "@/lib/uploadthing";
 
+export type LocalAttachment = {
+  variant: "chat";
+  id: string;
+  localurl: string;
+  type: "image";
+  title: string;
+  uploadProgress: number;
+  isUploadDone: boolean;
+};
 type AttachmentManager = {
   addAttachment: (file: File[]) => void;
 };
@@ -13,6 +30,9 @@ export const AttachmentProvider = function ({
 }: {
   children: React.ReactNode;
 }) {
+  const [attachments, setAttachments] = useState<
+    LocalAttachment | AttachmentSchema
+  >();
   const { mutateAsync: uploadFiles } = api.file.upload.useMutation({});
   const addAttachment = useCallback(async (file: File[]) => {
     const filesWithData = await Promise.all(
@@ -25,6 +45,13 @@ export const AttachmentProvider = function ({
     );
     uploadFiles({ files: filesWithData });
   }, []);
+
+  const {} = useUploadThing("chatAttachment", {
+    onUploadProgress: () => {},
+    onClientUploadComplete: () => {},
+    onUploadError: () => {},
+  });
+
   const value = useMemo(() => ({ addAttachment }), []);
   return (
     <AttachmentsContext.Provider value={value ?? null}>
