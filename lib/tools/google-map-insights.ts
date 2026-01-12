@@ -5,7 +5,7 @@ import { env } from "@/env";
 export const google_map_insights = function () {
   return tool({
     description:
-      "Get insights from Google Maps reviews for restaurants, cafes, hotels, and attractions. " +
+      "Get insights from Google Maps reviews for restaurants, cafes, hotels, hospital, and other places in the google maps. " +
       "Use this when users ask about places to visit, restaurant recommendations, or reviews. " +
       "Can search for specific places OR browse restaurants in an area.",
     inputSchema: z.object({
@@ -21,7 +21,13 @@ export const google_map_insights = function () {
           "The city or area (e.g., 'Chennai', 'Adyar, Chennai', 'Mumbai')"
         ),
       type: z
-        .enum(["restaurant", "cafe", "tourist_attraction", "hotel"])
+        .enum([
+          "restaurant",
+          "cafe",
+          "tourist_attraction",
+          "hotel",
+          "hospitals",
+        ])
         .optional()
         .describe("Type of place to search for when browsing an area"),
     }),
