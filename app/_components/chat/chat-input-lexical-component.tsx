@@ -1,6 +1,6 @@
 "use client";
 
-import { FC, useCallback, useContext, useEffect } from "react";
+import { FC, useCallback, useContext, useEffect, useState } from "react";
 import { PlainTextPlugin } from "@lexical/react/LexicalPlainTextPlugin";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
@@ -146,9 +146,13 @@ const ChatInput = function ({
 };
 
 const ChatInputLexicalComponent: FC<ChatInputLexicalComponentProps> = ({}) => {
-  const { addAttachment } = useAttachment();
+  const { addAttachment, attachments } = useAttachment();
   const { startNewMessage, messages, status } = useChatContext();
+  const [uploadProgress, setUploadProgress] = useState<Map<string, number>>(
+    new Map()
+  );
   const params = useParams<{ id: string }>();
+
   const handleSubmit = useCallback(
     async function (text: string) {
       if (!text.trim()) return;
@@ -157,12 +161,31 @@ const ChatInputLexicalComponent: FC<ChatInputLexicalComponentProps> = ({}) => {
     [messages]
   );
 
+  useEffect(() => {
+    attachments.forEach((item) => {
+      setUploadProgress((prev) => {
+        const map = new Map<string, number>(prev);
+
+        map.set(item.id, item.uploadProgress);
+
+        return map;
+      });
+    });
+  }, [attachments]);
+
+  useEffect(() => {
+    console.log(uploadProgress);
+  }, [uploadProgress]);
+
   const handleFileAdded = useCallback((file: File[]) => {
     // file.forEach((item) => console.log(item instanceof File));
     addAttachment(file);
   }, []);
   return (
     <div className="w-full h-full flex flex-col items-center justify-end py-4">
+      {Array.from(uploadProgress.values()).map((item, i) => (
+        <span key={i}>{item}</span>
+      ))}
       {messages.length && params.id ? (
         <MessageSection messages={messages} status={status} />
       ) : (

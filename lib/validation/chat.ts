@@ -6,6 +6,7 @@ export const attachmentValidation = z.object({
   title: z.string().nullable(),
   key: z.string().optional(),
   variant: z.enum(["knowledge", "chat"]),
+  url: z.string(),
 });
 
 export type AttachmentSchema = z.infer<typeof attachmentValidation>;
